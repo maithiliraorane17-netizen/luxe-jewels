@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #fbf8f0;
+  --color-gold-100: #f5ecd7;
+  --color-gold-200: #ead9ae;
+  --color-gold-300: #dcbe7c;
+  --color-gold-400: #cda355;
+  --color-gold-500: #b8863c;
+  --color-gold-600: #9c6c30;
+  --color-gold-700: #7d5429;
+  --color-gold-800: #664527;
+  --color-gold-900: #553a23;
+
+  --color-ink-950: #08080a;
+  --color-ink-900: #0f0f11;
+  --color-ink-800: #18181b;
+  --color-ink-700: #232326;
+  --color-ink-600: #333338;
+
+  --color-cream: #faf7f2;
+
+  --font-display: "Bodoni Moda", serif;
+  --font-sans: "Inter", sans-serif;
+
+  --shadow-soft: 0 20px 60px -15px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 10px 40px -8px rgba(205, 163, 85, 0.5);
+  --shadow-gold-lg: 0 25px 80px -15px rgba(205, 163, 85, 0.35);
+
+  --animate-shimmer: shimmer 3s linear infinite;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-marquee: marquee 28s linear infinite;
+  --animate-fade-up: fade-up 0.8s ease-out forwards;
+  --animate-pulse-slow: pulse-slow 6s ease-in-out infinite;
+
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+  @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse-slow { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.08); } }
+}
+
+html { scroll-behavior: smooth; }
+body {
+  @apply antialiased;
+  background: var(--color-ink-950);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #0f0f11; }
+::-webkit-scrollbar-thumb { background: #7d5429; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #cda355; }
+
+/* Gold shimmer text */
+.shimmer-text {
+  background: linear-gradient(90deg, #7d5429 0%, #f5ecd7 25%, #b8863c 50%, #f5ecd7 75%, #7d5429 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: var(--animate-shimmer);
+}
+
+/* Underline hover */
+.gold-underline { position: relative; }
+.gold-underline::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -4px;
+  height: 1px; width: 0%;
+  background: linear-gradient(90deg, #cda355, #f5ecd7);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gold-underline:hover::after { width: 100%; }
+
+/* Glass panel (dark) */
+.glass-dark {
+  background: rgba(15, 15, 17, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(205, 163, 85, 0.12);
+}
+
+/* Card with gold hairline border that glows on hover */
+.gold-card {
+  position: relative;
+  border: 1px solid rgba(205, 163, 85, 0.14);
+  background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+.gold-card:hover {
+  border-color: rgba(205, 163, 85, 0.5);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Noise texture overlay */
+.noise::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Marquee strip */
+.marquee-track { display: flex; width: max-content; animation: var(--animate-marquee); }
+
+/* Magnetic gold border button glow ring */
+.glow-ring {
+  position: relative;
+}
+.glow-ring::before {
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, transparent, rgba(205,163,85,0.9), transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.glow-ring:hover::before { opacity: 1; }
