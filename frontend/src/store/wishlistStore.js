@@ -5,13 +5,8 @@ export const useWishlistStore = create(
   persist(
     (set, get) => ({
       ids: [],
-      toggle: (productId) => {
-        const ids = get().ids.includes(productId)
-          ? get().ids.filter((id) => id !== productId)
-          : [...get().ids, productId];
-        set({ ids });
-      },
-      isWishlisted: (productId) => get().ids.includes(productId),
+      toggle: (id) => set({ ids: get().ids.includes(id) ? get().ids.filter((x) => x !== id) : [...get().ids, id] }),
+      has: (id) => get().ids.includes(id),
     }),
     { name: "luxejewels-wishlist" }
   )

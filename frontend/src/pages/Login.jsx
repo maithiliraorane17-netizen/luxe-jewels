@@ -1,57 +1,34 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import api from "../api/axios";
 import { useAuthStore } from "../store/authStore";
 import Button from "../components/ui/Button";
+import AuthShell from "./AuthShell";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
+  const [f, setF] = useState({ email: "", password: "" });
+  const [busy, setBusy] = useState(false);
   const setUser = useAuthStore((s) => s.setUser);
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
+  const [sp] = useSearchParams();
   const submit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault(); setBusy(true);
     try {
-      const res = await api.post("/auth/login", form);
-      setUser(res.data);
-      toast.success(`Welcome back, ${res.data.name}!`);
-      navigate(searchParams.get("redirect") || "/");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
+      const { data } = await api.post("/auth/login", f);
+      setUser(data); toast.success(`Welcome back, ${data.name.split(" ")[0]}`);
+      navigate(sp.get("redirect") || (data.role === "admin" ? "/admin" : "/"));
+    } catch (err) { toast.error(err.response?.data?.message || "Login failed"); }
+    finally { setBusy(false); }
   };
-
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-5 py-16">
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h1 className="font-display text-3xl font-semibold text-center">Welcome Back</h1>
-        <p className="mt-2 text-center text-cream/50">Sign in to your LuxeJewels account</p>
-        <form onSubmit={submit} className="mt-8 space-y-4">
-          <input
-            required type="email" placeholder="Email"
-            value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-lg border border-cream/15 bg-ink-900 px-4 py-3 text-sm text-cream placeholder:text-cream/30 focus:border-gold-400 focus:outline-none transition-colors"
-          />
-          <input
-            required type="password" placeholder="Password"
-            value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-lg border border-cream/15 bg-ink-900 px-4 py-3 text-sm text-cream placeholder:text-cream/30 focus:border-gold-400 focus:outline-none transition-colors"
-          />
-          <Button type="submit" variant="gold" className="w-full" disabled={loading}>
-            {loading ? "Signing in…" : "Sign In"}
-          </Button>
-        </form>
-        <p className="mt-6 text-center text-sm text-cream/50">
-          New here? <Link to="/register" className="font-medium text-gold-400">Create an account</Link>
-        </p>
-      </motion.div>
-    </div>
+    <AuthShell title="Welcome back" subtitle="Sign in to your LuxeJewels account.">
+      <form onSubmit={submit} className="space-y-4">
+        <input required type="email" placeholder="Email address" className="input-dark" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
+        <input required type="password" placeholder="Password" className="input-dark" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
+        <Button size="lg" className="w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
+      </form>
+      <p className="mt-8 text-center text-sm text-cream/50">New here? <Link to={`/register${sp.get("redirect") ? `?redirect=${sp.get("redirect")}` : ""}`} className="text-gold-300 underline-grow">Create an account</Link></p>
+    </AuthShell>
   );
 }

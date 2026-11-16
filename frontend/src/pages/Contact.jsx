@@ -1,35 +1,40 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
+import SplitText from "../components/fx/SplitText";
+import Reveal from "../components/fx/Reveal";
 import Button from "../components/ui/Button";
+import Accordion from "../components/ui/Accordion";
+
+const FAQ = [
+  { title: "How can I pay?", content: "UPI (GPay, PhonePe, Paytm), debit/credit cards and netbanking via Stripe — or Cash on Delivery for orders up to ₹50,000." },
+  { title: "How long does delivery take?", content: "Orders ship within 2 business days and arrive in 3–5 business days, fully insured." },
+  { title: "Can I return or exchange a piece?", content: "Yes — unworn pieces can be returned or exchanged within 30 days of delivery." },
+  { title: "Are your stones certified?", content: "Every diamond and gemstone ships with an independent grading certificate." },
+  { title: "Do you offer resizing?", content: "Complimentary resizing within 60 days on rings, subject to design." },
+];
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
-
-  const submit = (e) => {
-    e.preventDefault();
-    toast.success("Message sent! We'll get back to you soon.");
-    setForm({ name: "", email: "", message: "" });
-  };
-
+  const [f, setF] = useState({ name: "", email: "", message: "" });
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-      <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-10 text-center font-display text-4xl font-semibold">
-        Get in Touch
-      </motion.h1>
-      <div className="grid gap-12 lg:grid-cols-2">
-        <motion.form initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} onSubmit={submit} className="space-y-4">
-          <input required placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-cream/15 bg-ink-900 px-4 py-3 text-sm text-cream placeholder:text-cream/30 focus:border-gold-400 focus:outline-none transition-colors" />
-          <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full rounded-lg border border-cream/15 bg-ink-900 px-4 py-3 text-sm text-cream placeholder:text-cream/30 focus:border-gold-400 focus:outline-none transition-colors" />
-          <textarea required rows={5} placeholder="Message" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full rounded-lg border border-cream/15 bg-ink-900 px-4 py-3 text-sm text-cream placeholder:text-cream/30 focus:border-gold-400 focus:outline-none transition-colors" />
-          <Button type="submit" variant="gold">Send Message</Button>
-        </motion.form>
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
-          <div className="flex items-center gap-4"><Mail className="text-gold-400" /> hello@luxejewels.com</div>
-          <div className="flex items-center gap-4"><Phone className="text-gold-400" /> +91 98765 43210</div>
-          <div className="flex items-center gap-4"><MapPin className="text-gold-400" /> Borivali, Mumbai, India</div>
-        </motion.div>
+    <div className="mx-auto max-w-[1300px] px-6 pb-28 pt-14 sm:px-10">
+      <p className="mb-4 text-[11px] uppercase tracking-[0.4em] text-gold-400">Contact</p>
+      <SplitText as="h1" immediate text="Let's *talk*" className="font-display text-6xl sm:text-9xl" />
+      <div className="mt-16 grid gap-16 lg:grid-cols-2">
+        <Reveal>
+          <form onSubmit={(e) => { e.preventDefault(); toast.success("Message sent — we'll reply within a day."); setF({ name: "", email: "", message: "" }); }} className="space-y-4">
+            <input required className="input-dark" placeholder="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
+            <input required type="email" className="input-dark" placeholder="Email address" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
+            <textarea required rows={6} className="input-dark" placeholder="How can we help?" value={f.message} onChange={(e) => setF({ ...f, message: e.target.value })} />
+            <Button size="lg">Send message</Button>
+          </form>
+        </Reveal>
+        <Reveal delay={0.15} className="space-y-6">
+          {[[Mail, "Email", "hello@luxejewels.com"], [Phone, "Phone", "+91 8830050166"], [MapPin, "Atelier", "Borivali, Mumbai, India"]].map(([Icon, l, v]) => (
+            <div key={l} className="gold-card flex items-center gap-5 rounded-2xl p-5"><span className="flex h-12 w-12 items-center justify-center rounded-full border border-gold-400/30 text-gold-300"><Icon size={20} strokeWidth={1.4} /></span><div><p className="text-[11px] uppercase tracking-widest text-cream/40">{l}</p><p className="font-display text-xl">{v}</p></div></div>
+          ))}
+          <div className="pt-8"><p className="mb-4 font-display text-2xl">Frequently asked</p><Accordion items={FAQ} defaultOpen={-1} /></div>
+        </Reveal>
       </div>
     </div>
   );

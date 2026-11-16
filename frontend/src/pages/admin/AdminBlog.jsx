@@ -1,82 +1,40 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios";
 import Loader from "../../components/ui/Loader";
-import Button from "../../components/ui/Button";
+import Modal from "../../components/ui/Modal";
+
+const EMPTY = { title: "", excerpt: "", content: "", coverImage: "" };
 
 export default function AdminBlog() {
-  const [blogs, setBlogs] = useState([]);
+  const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", excerpt: "", content: "" });
-
-  const load = () => {
-    setLoading(true);
-    api.get("/blogs").then((res) => setBlogs(res.data)).finally(() => setLoading(false));
-  };
-  useEffect(load, []);
-
-  const submit = async (e) => {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [f, setF] = useState(EMPTY);
+  const load = () => api.get("/blogs").then((r) => setList(r.data)).finally(() => setLoading(false));
+  useEffect(() => { load(); }, []);
+  const save = async (e) => {
     e.preventDefault();
-    try {
-      await api.post("/blogs", form);
-      toast.success("Article published");
-      setShowForm(false);
-      setForm({ title: "", excerpt: "", content: "" });
-      load();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
-    }
+    try { if (editing) await api.put(`/blogs/${editing._id}`, f); else await api.post("/blogs", f); toast.success("Saved"); setOpen(false); load(); }
+    catch (err) { toast.error(err.response?.data?.message || "Error"); }
   };
-
-  const remove = async (id) => {
-    if (!confirm("Delete this article?")) return;
-    await api.delete(`/blogs/${id}`);
-    toast.success("Article removed");
-    load();
-  };
-
+  const del = async (id) => { if (!confirm("Delete article?")) return; await api.delete(`/blogs/${id}`); load(); };
   if (loading) return <Loader full />;
-
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-3xl font-semibold">Blog</h1>
-        <Button variant="gold" onClick={() => setShowForm(true)}><Plus size={16} /> New Article</Button>
-      </div>
-
-      <div className="space-y-4">
-        {blogs.map((b, i) => (
-          <motion.div key={b._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-soft">
-            <div>
-              <h3 className="font-display text-lg">{b.title}</h3>
-              <p className="text-sm text-ink-700/60">{b.excerpt}</p>
-            </div>
-            <button onClick={() => remove(b._id)} className="text-ink-700/40 hover:text-rose-500"><Trash2 size={16} /></button>
-          </motion.div>
-        ))}
-      </div>
-
-      <AnimatePresence>
-        {showForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/50 p-4" onClick={() => setShowForm(false)}>
-            <motion.form initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} onSubmit={submit} className="w-full max-w-lg rounded-2xl bg-cream p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-display text-xl">New Article</h3>
-                <button type="button" onClick={() => setShowForm(false)}><X size={20} /></button>
-              </div>
-              <div className="space-y-3">
-                <input required placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full rounded-lg border border-ink-900/15 px-3 py-2 text-sm" />
-                <input placeholder="Excerpt" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} className="w-full rounded-lg border border-ink-900/15 px-3 py-2 text-sm" />
-                <textarea required rows={6} placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="w-full rounded-lg border border-ink-900/15 px-3 py-2 text-sm" />
-              </div>
-              <Button type="submit" variant="gold" className="mt-5 w-full">Publish Article</Button>
-            </motion.form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="mb-6 flex items-center justify-between"><h1 className="font-display text-4xl font-semibold">Blog</h1><button onClick={() => { setEditing(null); setF(EMPTY); setOpen(true); }} className="flex items-center gap-2 rounded-lg bg-ink-900 px-4 py-2 text-sm text-white hover:bg-gold-600"><Plus size={16} /> New article</button></div>
+      <div className="space-y-3">{list.map((b) => (
+        <div key={b._id} className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5"><div><h3 className="font-display text-lg">{b.title}</h3><p className="text-sm text-black/50">{b.excerpt}</p></div><div className="flex gap-3 text-black/40"><button onClick={() => { setEditing(b); setF({ title: b.title, excerpt: b.excerpt || "", content: b.content, coverImage: b.coverImage || "" }); setOpen(true); }} className="hover:text-gold-600"><Pencil size={16} /></button><button onClick={() => del(b._id)} className="hover:text-rose-500"><Trash2 size={16} /></button></div></div>))}</div>
+      <Modal open={open} onClose={() => setOpen(false)} wide dark={false}>
+        <form onSubmit={save} className="space-y-3 p-7"><h3 className="font-display text-2xl">{editing ? "Edit" : "New"} article</h3>
+          <input required className="field" placeholder="Title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+          <input className="field" placeholder="Cover image URL (optional)" value={f.coverImage} onChange={(e) => setF({ ...f, coverImage: e.target.value })} />
+          <input className="field" placeholder="Excerpt" value={f.excerpt} onChange={(e) => setF({ ...f, excerpt: e.target.value })} />
+          <textarea required rows={9} className="field" placeholder="Content (blank line = new paragraph)" value={f.content} onChange={(e) => setF({ ...f, content: e.target.value })} />
+          <button className="w-full rounded-lg bg-ink-900 py-3 text-sm text-white hover:bg-gold-600">Publish</button></form>
+      </Modal>
     </div>
   );
 }
