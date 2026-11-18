@@ -1,8 +1,14 @@
+
 {
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination":"https://luxe-jewels.onrender.com/api/:path*"
-        }
-    ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://luxe-jewels.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
